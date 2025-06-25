@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<style>
+  .container-list-card {
+    background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); padding: 18px 14px; min-height: 420px;
+  }
+  .container-list-item { cursor:pointer; border-radius:6px; padding:7px 12px; margin-bottom:6px; display:flex; align-items:center; justify-content:space-between; transition:background 0.2s; }
+  .container-list-item.active { background:#e3f2fd; font-weight:600; color:#1976d2; }
+  .container-list-item:hover { background:#f1f8ff; }
+  .bin-table th, .bin-table td { vertical-align:middle; }
+  .bin-table .btn { padding:2px 8px; }
+</style>
+<div class="container mt-4">
+  <div class="row g-3">
+    <!-- 左侧：集装箱列表 -->
+    <div class="col-md-4">
+      <div class="container-list-card">
+        <h5 class="mb-3"><i class="bi bi-box"></i> 集装箱列表</h5>
+        <form id="add-container-form" class="row g-2 mb-3 align-items-end">
+          <div class="col-12 mb-1"><input type="text" class="form-control" id="new-container-name" placeholder="新集装箱名称" required></div>
+          <div class="col-4 input-group">
+            <input type="text" pattern="[0-9.]+" class="form-control" id="new-container-l" placeholder="长 (mm)" required>
+            <span class="input-group-text">mm</span>
+          </div>
+          <div class="col-4 input-group">
+            <input type="text" pattern="[0-9.]+" class="form-control" id="new-container-w" placeholder="宽 (mm)" required>
+            <span class="input-group-text">mm</span>
+          </div>
+          <div class="col-4 input-group">
+            <input type="text" pattern="[0-9.]+" class="form-control" id="new-container-h" placeholder="高 (mm)" required>
+            <span class="input-group-text">mm</span>
+          </div>
+          <div class="col-12"><button class="btn btn-primary w-100" type="submit">添加</button></div>
+        </form>
+        <div id="container-list"></div>
+      </div>
+    </div>
+    <!-- 右侧：bin编辑与3D预览 -->
+    <div class="col-md-8">
+      <div class="card p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h5 class="mb-0"><i class="bi bi-cube"></i> <span id="current-container-title">请选择集装箱</span></h5>
+          <button class="btn btn-outline-danger btn-sm d-none" id="delete-container-btn"><i class="bi bi-trash"></i> 删除集装箱</button>
+        </div>
+        <div id="container-size-info" class="mb-2 text-muted small"></div>
+        <div id="bin-section" class="d-none">
+          <form id="add-bin-form" class="row g-2 align-items-end mb-2">
+            <div class="col-auto"><input type="number" class="form-control" id="bin-index" placeholder="序号" required></div>
+            <div class="col-auto input-group">
+              <input type="text" pattern="[0-9.,]+" class="form-control" id="bin-position" placeholder="位置(x,y,z) (mm)" required>
+              <span class="input-group-text">mm</span>
+            </div>
+            <div class="col-auto input-group">
+              <input type="text" pattern="[0-9.,]+" class="form-control" id="bin-size" placeholder="尺寸(w,h,d) (mm)" required>
+              <span class="input-group-text">mm</span>
+            </div>
+            <div class="col-auto"><button class="btn btn-success" type="submit">添加Bin</button></div>
+          </form>
+          <table class="table table-bordered table-sm bin-table mb-2">
+            <thead><tr><th>序号</th><th>位置</th><th>尺寸</th><th>操作</th></tr></thead>
+            <tbody id="bin-list"></tbody>
+          </table>
+          <button class="btn btn-outline-primary mb-2" id="preview-3d-btn"><i class="bi bi-eye"></i> 3D预览</button>
+        </div>
+        <div class="card p-2 mt-2" style="min-height:520px;">
+          <div id="threejs-container" style="width:100%;height:480px;background:#f5f5f5;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/static/js/three.min.js"></script>
+<script src="/static/js/OrbitControls.js"></script>
+<script>
+// 兼容本地引入，确保 OrbitControls 正确挂载
+if (window.THREE && window.OrbitControls) {
+  THREE.OrbitControls = window.OrbitControls;
+}
+
+let containers = [], current = null, currentData = null;
+
+function fetchContainers() {
+  fetch('/container_config/api/list').then(r=>r.json()).then(list => {
+    containers = list;
+    renderContainerList();
+  });
+}
+function renderContainerList() {
+  const listDiv = document.getElementById('container-list');
+  listDiv.innerHTML = '';
+  containers.forEach(name => {
+    const div = document.createElement('div');
+    div.className = 'container-list-item' + (name===current?' active':'');
+    div.innerHTML = `<span>${name}</span> <button class="btn btn-link btn-sm text-danger p-0 del-btn" title="删除"><i class="bi bi-trash"></i></button>`;
+    div.onclick = e => { if(e.target.closest('.del-btn')) return; selectContainer(name); };
+    div.querySelector('.del-btn').onclick = e => { e.stopPropagation(); deleteContainer(name); };
+    listDiv.appendChild(div);
+  });
+}
+function selectContainer(name) {
+  current = name;
+  document.getElementById('current-container-title').textContent = name;
+  document.getElementById('delete-container-btn').classList.remove('d-none');
+  document.getElementById('bin-section').classList.remove('d-none');
+  fetch(`/container_config/api/${name}`).then(r=>r.json()).then(data => {
+    currentData = data;
+    renderBinList();
+    if(data.size) {
+      document.getElementById('container-size-info').textContent = `尺寸: ${data.size.join(' × ')}`;
+    } else {
+      document.getElementById('container-size-info').textContent = '';
+    }
+  });
+}
+function renderBinList() {
+  const tbody = document.getElementById('bin-list');
+  tbody.innerHTML = '';
+  (currentData.bins||[]).forEach(bin => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${bin.index}</td><td>${bin.position}</td><td>${bin.size}</td><td><button class="btn btn-danger btn-sm del-bin-btn" data-index="${bin.index}"><i class='bi bi-x'></i></button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll('.del-bin-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const idx = this.getAttribute('data-index');
+      fetch(`/container_config/api/${current}/bin/${idx}`, {method:'DELETE'}).then(()=>selectContainer(current));
+    });
+  });
+}
+function deleteContainer(name) {
+  if(!confirm('确定删除该集装箱？')) return;
+  fetch(`/container_config/api/${name}`, {method:'DELETE'}).then(()=>{ fetchContainers(); current=null; currentData=null; document.getElementById('current-container-title').textContent='请选择集装箱'; document.getElementById('bin-section').classList.add('d-none'); document.getElementById('delete-container-btn').classList.add('d-none'); clear3D(); document.getElementById('container-size-info').textContent=''; });
+}
+function clear3D() { document.getElementById('threejs-container').innerHTML = ''; }
+function renderBins3D(bins, containerSize) {
+  // 统一单位为毫米，three.js中1单位=1米，全部/1000
+  const scale = 1000;
+  const container = document.getElementById('threejs-container');
+  container.innerHTML = '';
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, container.offsetWidth/container.offsetHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(container.offsetWidth, container.offsetHeight);
+  renderer.setClearColor(0xf5f5f5);
+  container.appendChild(renderer.domElement);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.screenSpacePanning = false;
+  controls.minDistance = 0.1;
+  controls.maxDistance = 1000;
+  const light = new THREE.AmbientLight(0xffffff, 1.0);
+  scene.add(light);
+  const dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dLight.position.set(10,10,10);
+  scene.add(dLight);
+  // 校验containerSize
+  let csize = [1,1,1];
+  if(Array.isArray(containerSize) && containerSize.length===3) {
+    csize = containerSize.map(v=>{
+      let n = Number(v);
+      return (isNaN(n)||n<=0)?1:n/scale;
+    });
+    // 让集装箱以底面中心为原点，和bin一致
+    const geo = new THREE.BoxGeometry(csize[0], csize[1], csize[2]);
+    const mat = new THREE.MeshBasicMaterial({color:0x1976d2, transparent:true, opacity:0.05});
+    const box = new THREE.Mesh(geo, mat);
+    box.position.set(csize[0]/2, csize[1]/2, csize[2]/2);
+    scene.add(box);
+    const edges = new THREE.EdgesGeometry(geo);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0x0d47a1, linewidth:3}));
+    line.position.set(csize[0]/2, csize[1]/2, csize[2]/2);
+    scene.add(line);
+  }
+  let hasBin = false;
+  bins.forEach((bin,i) => {
+    let pos = [0,0,0], size = [1,1,1];
+    if(bin.position) pos = (typeof bin.position==="string"?bin.position.split(','):bin.position).map(Number);
+    if(bin.size) size = (typeof bin.size==="string"?bin.size.split(','):bin.size).map(Number);
+    // 校验
+    pos = pos.map(v=>{let n=Number(v);return isNaN(n)?0:n/scale;});
+    size = size.map(v=>{let n=Number(v);return (isNaN(n)||n<=0)?1:n/scale;});
+    if(size[0]>0 && size[1]>0 && size[2]>0) hasBin = true;
+    // bin以集装箱底面中心为原点
+    const geometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
+    const material = new THREE.MeshStandardMaterial({color:0x43a047, transparent:true, opacity:0.5});
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.set(pos[0]+size[0]/2, pos[1]+size[1]/2, pos[2]+size[2]/2);
+    scene.add(cube);
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0x333333}));
+    line.position.set(pos[0]+size[0]/2, pos[1]+size[1]/2, pos[2]+size[2]/2);
+    scene.add(line);
+  });
+  // 如果没有有效bin，显示一个默认bin方便调试
+  if(!hasBin) {
+    const geometry = new THREE.BoxGeometry(0.5,0.5,0.5);
+    const material = new THREE.MeshStandardMaterial({color:0xff9800, transparent:true, opacity:0.5});
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.set(0.25,0.25,0.25);
+    scene.add(cube);
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0xff9800}));
+    line.position.set(0.25,0.25,0.25);
+    scene.add(line);
+  }
+  // 相机视角
+  camera.position.set((csize[0]||1)*1.2, (csize[1]||1)*1.2, (csize[2]||1)*2.2);
+  camera.lookAt(csize[0]/2, csize[1]/2, csize[2]/2);
+  controls.target.set(csize[0]/2, csize[1]/2, csize[2]/2);
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  fetchContainers();
+  // 修正表单提交，允许小数点
+  function parseNum(val) {
+    const n = Number(val);
+    return isNaN(n) ? 0 : n;
+  }
+  document.getElementById('add-container-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = document.getElementById('new-container-name').value.trim();
+    const l = parseNum(document.getElementById('new-container-l').value);
+    const w = parseNum(document.getElementById('new-container-w').value);
+    const h = parseNum(document.getElementById('new-container-h').value);
+    if(!name||!l||!w||!h) return;
+    fetch('/container_config/api', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, size:[l,w,h]})}).then(()=>{ fetchContainers(); this.reset(); });
+  });
+  document.getElementById('add-bin-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const index = parseInt(document.getElementById('bin-index').value);
+    const position = document.getElementById('bin-position').value;
+    const size = document.getElementById('bin-size').value;
+    if(!index||!position||!size) return;
+    fetch(`/container_config/api/${current}/bin`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({index, position, size})}).then(()=>{ selectContainer(current); this.reset(); });
+  });
+  document.getElementById('delete-container-btn').addEventListener('click', function() { if(current) deleteContainer(current); });
+  document.getElementById('preview-3d-btn').addEventListener('click', function() { if(currentData) renderBins3D(currentData.bins||[], currentData.size); });
+});
+</script>
+{% endblock %}

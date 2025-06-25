@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Model Training{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+<h2>Industrial Packaging Model Training</h2>
+<form method="post" id="trainForm">
+    <div class="mb-3">
+        <label for="dataset" class="form-label">Select Dataset</label>
+        <select class="form-select" id="dataset" name="dataset" required>
+            {% for file in datasets %}
+            <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Group By</label>
+            <select class="form-select" name="group_by" required>
+                {% for col in all_columns %}
+                <option value="{{ col }}" {% if col=='HU number' %}selected{% endif %}>{{ col }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Feature Columns (multi-select)</label>
+            <select class="form-select" name="features" id="features" multiple required size="6">
+                {% for col in all_columns %}
+                <option value="{{ col }}" {% if col in ['Material','Packed Quantity'] %}selected{% endif %}>{{ col }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Hold Ctrl (Windows) or Cmd (Mac) to select multiple features.</div>
+        </div>
+    </div>
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Aggregation</label>
+            <select class="form-select" name="agg" required>
+                <option value="sum" selected>sum</option>
+                <option value="mean">mean</option>
+                <option value="max">max</option>
+                <option value="min">min</option>
+                <option value="median">median</option>
+                <option value="std">std</option>
+                <option value="count">count</option>
+                <option value="product">product</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Number of Trees (n_estimators)</label>
+            <input type="number" class="form-control" name="n_estimators" value="200" min="10" max="1000" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Max Depth (max_depth)</label>
+            <input type="number" class="form-control" name="max_depth" value="10" min="3" max="50" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Training Ratio (%)</label>
+            <input type="number" class="form-control" name="train_ratio" value="90" min="50" max="90" required>
+        </div>
+    </div>
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <label class="form-label">Min Samples Split (min_samples_split)</label>
+            <input type="number" class="form-control" name="min_samples_split" value="2" min="2" max="100" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Min Samples Leaf (min_samples_leaf)</label>
+            <input type="number" class="form-control" name="min_samples_leaf" value="1" min="1" max="50" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Max Features (max_features)</label>
+            <select class="form-select" name="max_features">
+                <option value="log2" selected>log2</option>
+                <option value="sqrt">sqrt</option>
+                <option value="None">None</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Bootstrap Sampling (bootstrap)</label>
+            <select class="form-select" name="bootstrap">
+                <option value="True" selected>True</option>
+                <option value="False">False</option>
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3" id="trainBtn">Start Training</button>
+</form>
+<div id="trainProgress" style="display:none;" class="alert alert-info mt-3">
+    <span>Training in progress, please do not close or leave the page...</span>
+    <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+</div>
+{% if logs %}
+<div class="alert alert-secondary mt-3" style="white-space: pre-line;">{{ logs }}</div>
+{% endif %}
+{% if results %}
+<div class="alert alert-success mt-3">
+    <b>Training completed, Model ID:</b> {{ results.model_id }}<br>
+    <b>Model Path:</b> {{ results.save_path }}
+</div>
+{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('trainForm').addEventListener('submit', function() {
+    document.getElementById('trainBtn').disabled = true;
+    document.getElementById('trainProgress').style.display = '';
+});
+</script>
+{% endblock %}

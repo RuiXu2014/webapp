@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Prediction{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+<h2>Packing Demand Prediction</h2>
+<!-- Data structure description and sample table for prediction upload -->
+<div class="alert alert-info" role="alert">
+    <strong>Upload Data Format:</strong> Please upload a CSV or Excel file with the following columns:<br>
+    <ul class="mb-2">
+        <li><b>SD Document</b>: Sales/Shipping document number (string or integer)</li>
+        <li><b>Shipping Point</b>: Shipping location (string)</li>
+        <li><b>Material</b>: Material ID (string)</li>
+        <li><b>Qty</b>: Quantity to predict (integer)</li>
+    </ul>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>SD Document</th>
+                    <th>Shipping Point</th>
+                    <th>Material</th>
+                    <th>Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>54312000</td>
+                    <td>CND8</td>
+                    <td>KRD901154/11</td>
+                    <td>8</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <span class="text-muted">* Ensure your file includes all columns as shown above. Each row represents a material and quantity to be predicted for a shipping document.</span>
+</div>
+<form method="post" enctype="multipart/form-data" id="predictForm">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Select Model File (.pkl)</label>
+            <select class="form-select" name="model_file" required>
+                <option value="">Please select a model</option>
+                {% for file in model_files %}
+                <option value="{{ file }}" {% if selected_model==file %}selected{% endif %}>{{ file }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Upload Prediction Data (Excel/CSV)</label>
+            <input type="file" class="form-control" name="data_file" accept=".xlsx,.xls,.csv" required>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3" id="predictBtn">Start Prediction</button>
+</form>
+<div id="predictProgress" style="display:none;" class="alert alert-info mt-3">
+    <span>Predicting, please do not close or leave the page...</span>
+    <span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+</div>
+
+{% if logs %}
+<div class="alert alert-secondary mt-3" style="white-space: pre-line;">{{ logs }}</div>
+{% endif %}
+
+{% if preview_html %}
+<div class="alert alert-secondary mt-3">
+    <b>Data Preview (first 10 rows)</b>
+    <div class="table-responsive">{{ preview_html|safe }}</div>
+</div>
+{% endif %}
+
+{% if result_table_html %}
+<div class="alert alert-success mt-3">
+    <b>Prediction Results</b>
+    <div class="table-responsive">
+        {{ result_table_html|safe }}
+    </div>
+    <div id="pagination" class="mt-2"></div>
+    {% if download_id %}
+    <a class="btn btn-success mt-2" href="{{ url_for('prediction.download_prediction', download_id=download_id) }}">Download All Prediction Results</a>
+    {% endif %}
+</div>
+{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('predictForm').addEventListener('submit', function() {
+    document.getElementById('predictBtn').disabled = true;
+    document.getElementById('predictProgress').style.display = '';
+});
+
+// Table pagination for prediction results
+window.addEventListener('DOMContentLoaded', function() {
+    const table = document.querySelector('.alert-success #prediction-table');
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const rowsPerPage = 10;
+    const pagination = document.getElementById('pagination');
+    let currentPage = 1;
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+    function showPage(page) {
+        currentPage = page;
+        rows.forEach((row, i) => {
+            row.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
+        });
+        renderPagination();
+    }
+
+    function renderPagination() {
+        pagination.innerHTML = '';
+        if (totalPages <= 1) return;
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement('button');
+            btn.textContent = i;
+            btn.className = 'btn btn-sm btn-outline-primary mx-1';
+            btn.disabled = (i === currentPage);
+            btn.onclick = () => showPage(i);
+            pagination.appendChild(btn);
+        }
+    }
+
+    if (rows.length > 0) {
+        showPage(1);
+    }
+});
+</script>
+{% endblock %}

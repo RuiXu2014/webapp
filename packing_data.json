@@ -1,0 +1,639 @@
+{
+  "metadata": {
+    "created_at": "2025-06-18 12:53:40",
+    "total_bins": 12
+  },
+  "bins": [
+    {
+      "identifier": 1,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [
+        {
+          "id": "LELMECB40070631795",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 596.0,
+            "height": 396.0,
+            "depth": 493.0
+          },
+          "volume": 116355888.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745256",
+          "position": [
+            596.0,
+            0.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 596.0,
+            "height": 396.0,
+            "depth": 493.0
+          },
+          "volume": 116355888.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745287",
+          "position": [
+            0.0,
+            396.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 596.0,
+            "height": 396.0,
+            "depth": 493.0
+          },
+          "volume": 116355888.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745294",
+          "position": [
+            596.0,
+            396.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 596.0,
+            "height": 396.0,
+            "depth": 493.0
+          },
+          "volume": 116355888.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745300",
+          "position": [
+            0.0,
+            0.0,
+            493.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 596.0,
+            "height": 396.0,
+            "depth": 493.0
+          },
+          "volume": 116355888.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599873",
+          "position": [
+            596.0,
+            0.0,
+            493.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599880",
+          "position": [
+            0.0,
+            396.0,
+            493.0
+          ],
+          "rotation_type": 1,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599897",
+          "position": [
+            596.0,
+            0.0,
+            738.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599903",
+          "position": [
+            0.0,
+            396.0,
+            738.0
+          ],
+          "rotation_type": 1,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745317",
+          "position": [
+            560.0,
+            560.0,
+            493.0
+          ],
+          "rotation_type": 2,
+          "dimensions": {
+            "width": 560.0,
+            "height": 400.0,
+            "depth": 235.0
+          },
+          "volume": 52640000.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070630897",
+          "position": [
+            994.0,
+            0.0,
+            493.0
+          ],
+          "rotation_type": 3,
+          "dimensions": {
+            "width": 396.0,
+            "height": 298.0,
+            "depth": 164.0
+          },
+          "volume": 19353312.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070630019",
+          "position": [
+            960.0,
+            560.0,
+            493.0
+          ],
+          "rotation_type": 2,
+          "dimensions": {
+            "width": 288.0,
+            "height": 188.0,
+            "depth": 148.0
+          },
+          "volume": 8013312.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070630323",
+          "position": [
+            0.0,
+            0.0,
+            986.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 288.0,
+            "height": 188.0,
+            "depth": 148.0
+          },
+          "volume": 8013312.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        }
+      ],
+      "utilization_metrics": {
+        "used_volume": 888221776.0,
+        "utilization_rate": 77.1,
+        "remaining_volume": 263778224.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 2,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [
+        {
+          "id": "LELMECB40070599910",
+          "position": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599927",
+          "position": [
+            398.0,
+            0.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599934",
+          "position": [
+            796.0,
+            0.0,
+            0.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070599941",
+          "position": [
+            0.0,
+            0.0,
+            245.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070600920",
+          "position": [
+            398.0,
+            0.0,
+            245.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070600937",
+          "position": [
+            796.0,
+            0.0,
+            245.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070600944",
+          "position": [
+            0.0,
+            0.0,
+            490.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070600951",
+          "position": [
+            398.0,
+            0.0,
+            490.0
+          ],
+          "rotation_type": 0,
+          "dimensions": {
+            "width": 398.0,
+            "height": 560.0,
+            "depth": 245.0
+          },
+          "volume": 54605600.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745324",
+          "position": [
+            796.0,
+            0.0,
+            490.0
+          ],
+          "rotation_type": 1,
+          "dimensions": {
+            "width": 560.0,
+            "height": 400.0,
+            "depth": 235.0
+          },
+          "volume": 52640000.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745362",
+          "position": [
+            0.0,
+            560.0,
+            0.0
+          ],
+          "rotation_type": 2,
+          "dimensions": {
+            "width": 560.0,
+            "height": 400.0,
+            "depth": 235.0
+          },
+          "volume": 52640000.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745379",
+          "position": [
+            400.0,
+            560.0,
+            0.0
+          ],
+          "rotation_type": 2,
+          "dimensions": {
+            "width": 560.0,
+            "height": 400.0,
+            "depth": 235.0
+          },
+          "volume": 52640000.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        },
+        {
+          "id": "LELMECB40070745386",
+          "position": [
+            800.0,
+            560.0,
+            0.0
+          ],
+          "rotation_type": 2,
+          "dimensions": {
+            "width": 560.0,
+            "height": 400.0,
+            "depth": 235.0
+          },
+          "volume": 52640000.0,
+          "mass": 10.0,
+          "color": "#FF0000"
+        }
+      ],
+      "utilization_metrics": {
+        "used_volume": 647404800.0,
+        "utilization_rate": 56.2,
+        "remaining_volume": 504595200.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 3,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 4,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 5,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 6,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 7,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 8,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 9,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 10,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 11,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    },
+    {
+      "identifier": 12,
+      "dimensions": {
+        "width": 1200.0,
+        "height": 800.0,
+        "depth": 1200.0
+      },
+      "max_weight": 1000.0,
+      "volume": 1152000000.0,
+      "items": [],
+      "utilization_metrics": {
+        "used_volume": 0,
+        "utilization_rate": 0.0,
+        "remaining_volume": 1152000000.0
+      },
+      "gravity_center": []
+    }
+  ]
+}

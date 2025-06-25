@@ -1,0 +1,14 @@
+# 忽略以下文件和目录，不要复制到Docker镜像中
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*/.git
+.DS_Store
+.env
+.venv
+env/
+venv/
+ENV/
+uploads/*
+!uploads/.gitkeep

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}GSU MNEA Prediction Platform{% endblock %}
+{% block content %}
+<div class="height-100 bg-light main-content">
+    <div class="content-wrapper">
+        <div class="welcome-section">
+            <h1>Welcome to GSU MNEA PACKING PREDICTION Platform</h1>
+            <p>A comprehensive solution for data processing, machine learning, and 3D visualization</p>
+        </div>
+        <div class="dashboard-cards">
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <a href="/loading" style="text-decoration:none;color:inherit;">
+                            <div class="card-body">
+                                <i class='bx bx-data card-icon'></i>
+                                <h5 class="card-title">Data Loading</h5>
+                                <p class="card-text">Manage and monitor your data loading history</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <a href="/training" style="text-decoration:none;color:inherit;">
+                            <div class="card-body">
+                                <i class='bx bx-brain card-icon'></i>
+                                <h5 class="card-title">ML Package</h5>
+                                <p class="card-text">Training and prediction tools</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <a href="/loading_3d" style="text-decoration:none;color:inherit;">
+                            <div class="card-body">
+                                <i class='bx bx-cube-alt card-icon'></i>
+                                <h5 class="card-title">3D Loading</h5>
+                                <p class="card-text">3D simulation and visualization</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <a href="/configuration" style="text-decoration:none;color:inherit;">
+                            <div class="card-body">
+                                <i class='bx bx-cog card-icon'></i>
+                                <h5 class="card-title">Configuration</h5>
+                                <p class="card-text">System configuration and maintenance</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

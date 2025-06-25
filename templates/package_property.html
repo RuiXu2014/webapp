@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Packaging Property Upload{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2>Packaging Property Upload</h2>
+  <div class="alert alert-info">
+    <b>Instructions:</b>
+    <ul>
+      <li>Upload a CSV or Excel file with columns: Package, Length, Width, Height, Volume</li>
+      <li>Data will be validated and saved as JSON in the Dependency folder</li>
+      <li>You can also view, add, edit, or delete all package data below</li>
+    </ul>
+  </div>
+  <form method="post" enctype="multipart/form-data" class="mb-4">
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+        <input type="file" name="datafile" accept=".xlsx,.xls,.csv" class="form-control" required>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-success">Upload & Save</button>
+      </div>
+    </div>
+  </form>
+  {% if message %}
+    <div class="alert alert-secondary">{{ message }}</div>
+  {% endif %}
+  {% if preview %}
+    <div class="card mt-3">
+      <div class="card-body">
+        <h5 class="card-title">Preview (first 5 rows)</h5>
+        <div class="table-responsive">
+          <table class="table table-bordered table-sm">
+            <thead>
+              <tr>
+                <th>Package</th><th>Length</th><th>Width</th><th>Height</th><th>Volume</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in preview %}
+              <tr>
+                <td>{{ row.Package }}</td>
+                <td>{{ row.Length }}</td>
+                <td>{{ row.Width }}</td>
+                <td>{{ row.Height }}</td>
+                <td>{{ row.Volume }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+  <hr>
+  <h4>All Package Data</h4>
+  <form method="post" class="row g-2 align-items-end mb-3">
+    <input type="hidden" name="action" value="add">
+    <div class="col-auto"><input type="text" name="Package" class="form-control" placeholder="Package" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Length" class="form-control" placeholder="Length" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Width" class="form-control" placeholder="Width" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Height" class="form-control" placeholder="Height" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Volume" class="form-control" placeholder="Volume" required></div>
+    <div class="col-auto"><button type="submit" class="btn btn-success">Add / Update</button></div>
+  </form>
+  <div class="mb-2">
+    <input type="text" id="packageSearch" class="form-control" placeholder="Search by Package name...">
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm" id="packageTable">
+          <thead>
+            <tr>
+              <th>Package</th><th>Length</th><th>Width</th><th>Height</th><th>Volume</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in all_packages %}
+            <tr>
+              <td>{{ row.Package }}</td>
+              <td>{{ row.Length }}</td>
+              <td>{{ row.Width }}</td>
+              <td>{{ row.Height }}</td>
+              <td>{{ row.Volume }}</td>
+              <td>
+                <form method="post" style="display:inline;">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="Package" value="{{ row.Package }}">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <nav>
+          <ul class="pagination pagination-sm justify-content-center" id="tablePagination"></ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  // Simple client-side pagination for the package table
+  const pageSize = 10;
+  const table = document.getElementById('packageTable');
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const pageCount = Math.ceil(rows.length / pageSize);
+  const pagUl = document.getElementById('tablePagination');
+  function renderPage(page, filteredRows) {
+    (filteredRows || rows).forEach((row, i) => {
+      row.style.display = (i >= (page-1)*pageSize && i < page*pageSize) ? '' : 'none';
+    });
+    pagUl.innerHTML = '';
+    const total = (filteredRows || rows).length;
+    const count = Math.ceil(total / pageSize);
+    for(let i=1;i<=count;i++) {
+      const li = document.createElement('li');
+      li.className = 'page-item' + (i===page?' active':'');
+      const a = document.createElement('a');
+      a.className = 'page-link';
+      a.href = '#';
+      a.textContent = i;
+      a.onclick = (e)=>{e.preventDefault();renderPage(i, filteredRows);};
+      li.appendChild(a); pagUl.appendChild(li);
+    }
+  }
+  // Search functionality
+  const searchInput = document.getElementById('packageSearch');
+  searchInput.addEventListener('input', function() {
+    const val = this.value.trim().toLowerCase();
+    const filtered = rows.filter(row => row.children[0].textContent.toLowerCase().includes(val));
+    rows.forEach(r => r.style.display = 'none');
+    if (filtered.length > 0) {
+      renderPage(1, filtered);
+      pagUl.style.display = '';
+    } else {
+      pagUl.style.display = 'none';
+    }
+  });
+  // Initial render
+  if (rows.length > pageSize) {
+    renderPage(1);
+    pagUl.style.display = '';
+  } else {
+    pagUl.style.display = 'none';
+  }
+})();
+</script>
+{% endblock %}

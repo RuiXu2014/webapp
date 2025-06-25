@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Package Manage{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2>Package Data Management</h2>
+  <div class="alert alert-info">
+    <b>Tip:</b> You can add, edit, or delete package data. All changes are saved to <code>Dependency/Package.json</code>.
+  </div>
+  {% if message %}
+    <div class="alert alert-success">{{ message }}</div>
+  {% endif %}
+  <form method="post" class="row g-2 align-items-end mb-3">
+    <input type="hidden" name="action" value="add">
+    <div class="col-auto"><input type="text" name="Package" class="form-control" placeholder="Package" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Length" class="form-control" placeholder="Length" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Width" class="form-control" placeholder="Width" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Height" class="form-control" placeholder="Height" required></div>
+    <div class="col-auto"><input type="number" step="any" name="Volume" class="form-control" placeholder="Volume" required></div>
+    <div class="col-auto"><button type="submit" class="btn btn-success">Add / Update</button></div>
+  </form>
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm" id="packageTable">
+          <thead>
+            <tr>
+              <th>Package</th><th>Length</th><th>Width</th><th>Height</th><th>Volume</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in packages %}
+            <tr>
+              <td>{{ row.Package }}</td>
+              <td>{{ row.Length }}</td>
+              <td>{{ row.Width }}</td>
+              <td>{{ row.Height }}</td>
+              <td>{{ row.Volume }}</td>
+              <td>
+                <form method="post" style="display:inline;">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="Package" value="{{ row.Package }}">
+                  <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <nav>
+          <ul class="pagination pagination-sm justify-content-center" id="tablePagination"></ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  // Simple client-side pagination for the package table
+  const pageSize = 10;
+  const table = document.getElementById('packageTable');
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const pageCount = Math.ceil(rows.length / pageSize);
+  const pagUl = document.getElementById('tablePagination');
+  function renderPage(page) {
+    rows.forEach((row, i) => {
+      row.style.display = (i >= (page-1)*pageSize && i < page*pageSize) ? '' : 'none';
+    });
+    pagUl.innerHTML = '';
+    for(let i=1;i<=pageCount;i++) {
+      const li = document.createElement('li');
+      li.className = 'page-item' + (i===page?' active':'');
+      const a = document.createElement('a');
+      a.className = 'page-link';
+      a.href = '#';
+      a.textContent = i;
+      a.onclick = (e)=>{e.preventDefault();renderPage(i);};
+      li.appendChild(a); pagUl.appendChild(li);
+    }
+  }
+  if (rows.length > pageSize) {
+    renderPage(1);
+    pagUl.style.display = '';
+  } else {
+    pagUl.style.display = 'none';
+  }
+})();
+</script>
+{% endblock %}

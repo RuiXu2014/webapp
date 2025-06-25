@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+  .op-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 32px 32px 20px 32px; /* larger padding */
+    margin-bottom: 32px;
+  }
+  .op-card label {
+    font-weight: 500;
+    color: #333;
+    font-size: 1.08rem;
+  }
+  .op-card .form-select, .op-card .form-control {
+    font-size: 1.05rem;
+  }
+  .op-card .btn-primary {
+    font-size: 1.12rem;
+    padding: 10px 32px;
+    border-radius: 7px;
+    box-shadow: 0 2px 8px rgba(0,123,255,0.10);
+  }
+  .card-section {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    padding: 28px 24px 24px 24px;
+    margin-bottom: 24px;
+    min-height: 340px;
+  }
+  .section-title {
+    font-size: 1.22rem;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 22px;
+    letter-spacing: 1px;
+  }
+  #threejs-container {
+    border-radius: 10px;
+    border: 1px solid #e3e3e3;
+    box-shadow: 0 2px 8px rgba(25,118,210,0.08);
+    min-height: 700px;
+    height: 700px !important;
+    width: 100% !important;
+    background: #f5f5f5;
+  }
+  .container-fluid {
+    max-width: 1800px;
+    min-width: 1100px;
+    padding-left: 32px;
+    padding-right: 32px;
+    margin-top: 80px;
+  }
+  @media (max-width: 991px) {
+    .card-section { margin-bottom: 16px; }
+    .container-fluid { min-width: unset; padding-left: 8px; padding-right: 8px; margin-top: 70px; }
+    #threejs-container { min-height: 400px; height: 400px !important; }
+  }
+</style>
+<div class="container-fluid mt-4">
+  <!-- Data structure description and sample table for 3D loading upload -->
+  <div class="alert alert-info mb-3" role="alert">
+    <strong>Upload Data Format:</strong> Please upload a CSV or Excel file with the following columns:<br>
+    <ul class="mb-2">
+      <li><b>HandlingUnit</b>: Unique box or handling unit ID (string)</li>
+      <li><b>Length</b>: Box length (mm, number)</li>
+      <li><b>Width</b>: Box width (mm, number)</li>
+      <li><b>Height</b>: Box height (mm, number)</li>
+    </ul>
+    <div class="table-responsive">
+      <table class="table table-bordered table-sm mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>HandlingUnit</th>
+            <th>Length</th>
+            <th>Width</th>
+            <th>Height</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>LELMECB40070631795</td>
+            <td>596</td>
+            <td>396</td>
+            <td>493</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <span class="text-muted">* Ensure your file includes all columns as shown above. Units: Length/Width/Height in millimeters.</span>
+  </div>
+  <!-- Top operation area -->
+  <div class="row">
+    <div class="col-12">
+      <div class="op-card d-flex flex-wrap align-items-end gap-3">
+        <!-- File upload -->
+        <div>
+          <label for="datafile" class="form-label mb-1">Upload box data file</label>
+          <input type="file" class="form-control" id="datafile" name="datafile" accept=".csv,.xlsx,.xls" style="width:180px;">
+        </div>
+        <!-- Vehicle type selection -->
+        <div>
+          <label for="vehicle_type" class="form-label mb-1">Vehicle type</label>
+          <select class="form-select" id="vehicle_type" style="width:120px;">
+            <option value="container">Container</option>
+            <option value="truck">Truck</option>
+          </select>
+        </div>
+        <!-- Container size selection -->
+        <div id="container-size-group">
+          <label for="container_size" class="form-label mb-1">Container size</label>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select" id="container_size" style="width:150px;"></select>
+            <a href="/container_config" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">Configure container</a>
+          </div>
+        </div>
+        <!-- Truck size selection -->
+        <div id="truck-size-group" style="display:none;">
+          <label for="truck_size" class="form-label mb-1">Truck size</label>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select" id="truck_size" style="width:180px;"></select>
+            <a href="/vehicle_config" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener">Configure truck</a>
+          </div>
+        </div>
+        <!-- Simulate button -->
+        <div>
+          <button type="button" class="btn btn-primary" id="simulateBtn" disabled>Simulate loading and 3D preview</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Main content: left table, right 3D -->
+  <div class="row">
+    <!-- Left: data preview (paginated table) -->
+    <div class="col-md-5 col-lg-4">
+      <div class="card-section">
+        <div class="section-title">Data preview</div>
+        <div class="table-responsive" id="previewTable"></div>
+        <nav>
+          <ul class="pagination pagination-sm justify-content-center" id="tablePagination"></ul>
+        </nav>
+      </div>
+    </div>
+    <!-- Right: 3D area -->
+    <div class="col-md-7 col-lg-8">
+      <div class="card-section">
+        <div class="section-title">3D loading preview</div>
+        <div id="threejs-container" style="width:100%;height:700px;background:#f5f5f5;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script type="module">
+// 全局变量声明，确保唯一
+let previewData = [];
+let previewHeaders = [];
+let headerFieldMap = {};
+let currentPage = 1;
+const pageSize = 20;
+
+// 车型切换显示尺寸下拉
+const vehicleType = document.getElementById('vehicle_type');
+vehicleType && vehicleType.addEventListener('change', function() {
+  document.getElementById('container-size-group').style.display = this.value === 'container' ? '' : 'none';
+  document.getElementById('truck-size-group').style.display = this.value === 'truck' ? '' : 'none';
+});
+
+// Render table (supports pagination, renders even if empty)
+function renderTable(page=1) {
+  const tableDiv = document.getElementById('previewTable');
+  tableDiv.innerHTML = '';
+  const table = document.createElement('table');
+  table.className = 'table table-bordered table-sm';
+  const thead = document.createElement('thead');
+  const tr = document.createElement('tr');
+  (previewHeaders.length ? previewHeaders : ['No Data']).forEach(h => {
+    const th = document.createElement('th'); th.textContent = h; tr.appendChild(th);
+  });
+  thead.appendChild(tr); table.appendChild(thead);
+  const tbody = document.createElement('tbody');
+  if (previewData.length) {
+    previewData.slice((page-1)*pageSize, page*pageSize).forEach(row => {
+      const tr = document.createElement('tr');
+      previewHeaders.forEach(h => {
+        const td = document.createElement('td');
+        // Use mapped field name
+        td.textContent = row[headerFieldMap[h]] || '';
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  } else {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = previewHeaders.length || 1;
+    td.className = 'text-center text-muted';
+    td.textContent = 'No data';
+    tr.appendChild(td); tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  tableDiv.appendChild(table);
+  renderPagination();
+}
+
+// 渲染分页
+function renderPagination() {
+  const total = previewData.length;
+  const pageCount = Math.ceil(total / pageSize) || 1;
+  const pagUl = document.getElementById('tablePagination');
+  pagUl.innerHTML = '';
+  for(let i=1;i<=pageCount;i++) {
+    const li = document.createElement('li');
+    li.className = 'page-item' + (i===currentPage?' active':'');
+    const a = document.createElement('a');
+    a.className = 'page-link';
+    a.href = '#';
+    a.textContent = i;
+    a.onclick = (e)=>{e.preventDefault();currentPage=i;renderTable(i);};
+    li.appendChild(a); pagUl.appendChild(li);
+  }
+}
+
+// 文件上传并预览
+const fileInput = document.getElementById('datafile');
+fileInput && fileInput.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) {
+    previewData = [];
+    previewHeaders = [];
+    headerFieldMap = {};
+    currentPage = 1;
+    renderTable();
+    document.getElementById('simulateBtn').disabled = true;
+    return;
+  }
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (ext === 'csv') {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split('\n').filter(Boolean);
+      if (!lines.length) {
+        alert('File is empty');
+        previewHeaders = ['No data'];
+        previewData = [];
+        headerFieldMap = {};
+        renderTable();
+        document.getElementById('simulateBtn').disabled = true;
+        return;
+      }
+      let headers = lines[0].split(',').map(h=>h.trim());
+      // 字段映射
+      const mapField = h => {
+        if (h.toLowerCase() === 'length') return 'l';
+        if (h.toLowerCase() === 'width') return 'w';
+        if (h.toLowerCase() === 'height') return 'h';
+        if (h.toLowerCase() === 'handlingunit') return 'HandlingUnit';
+        return h;
+      };
+      headerFieldMap = {};
+      headers.forEach(h => { headerFieldMap[h] = mapField(h); });
+      const mappedHeaders = headers.map(mapField);
+      previewHeaders = headers;
+      previewData = lines.slice(1).map(line => {
+        const obj = {};
+        line.split(',').forEach((v, i) => obj[mappedHeaders[i]] = v.trim());
+        return obj;
+      });
+      // 检查必须字段
+      const required = ['l','w','h','HandlingUnit'];
+      let missing = required.filter(f => !mappedHeaders.includes(f));
+      if (missing.length) {
+        alert('Missing fields: ' + missing.join(', '));
+        previewData = [];
+        renderTable();
+        document.getElementById('simulateBtn').disabled = true;
+        return;
+      }
+      // 检查数值有效性
+      let invalid = previewData.some(row => isNaN(parseFloat(row.l)) || isNaN(parseFloat(row.w)) || isNaN(parseFloat(row.h)));
+      if (invalid) {
+        alert('Length, width, and height must be numbers');
+        previewData = [];
+        renderTable();
+        document.getElementById('simulateBtn').disabled = true;
+        return;
+      }
+      currentPage = 1;
+      renderTable();
+      document.getElementById('simulateBtn').disabled = !previewData.length;
+    };
+    reader.readAsText(file);
+  } else if (ext === 'xlsx' || ext === 'xls') {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet, {defval: ''});
+      if (!json.length) {
+        alert('Excel file is empty');
+        previewHeaders = ['No data'];
+        previewData = [];
+        headerFieldMap = {};
+        renderTable();
+        document.getElementById('simulateBtn').disabled = true;
+        return;
+      }
+      let headers = Object.keys(json[0]);
+      // 字段映射
+      const mapField = h => {
+        if (h.toLowerCase() === 'length') return 'l';
+        if (h.toLowerCase() === 'width') return 'w';
+        if (h.toLowerCase() === 'height') return 'h';
+        if (h.toLowerCase() === 'handlingunit') return 'HandlingUnit';
+        return h;
+      };
+      headerFieldMap = {};
+      headers.forEach(h => { headerFieldMap[h] = mapField(h); });
+      const mappedHeaders = headers.map(mapField);
+      previewHeaders = headers;
+      previewData = json.map(row => {
+        const obj = {};
+        headers.forEach((h, i) => obj[mappedHeaders[i]] = row[h]);
+        return obj;
+      });
+      // 检查必须字段
+      const required = ['l','w','h','HandlingUnit'];
+      let missing = required.filter(f => !mappedHeaders.includes(f));
+      if (missing.length) {
+        alert('Missing fields: ' + missing.join(', '));
+        previewData = [];
+        renderTable();
+        document.getElementById('simulateBtn').disabled = true;
+        return;
+      }
+      // 检查数值有效性
+      let invalid = previewData.some(row => isNaN(parseFloat(row.l)) || isNaN(parseFloat(row.w)) || isNaN(parseFloat(row.h)));
+      if (invalid) {
+        alert('Length, width, and height must be numbers');
+        previewData = [];
+        renderTable();
+        document.getElementById('simulateBtn').disabled = true;
+        return;
+      }
+      currentPage = 1;
+      renderTable();
+      document.getElementById('simulateBtn').disabled = !previewData.length;
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    alert('Only CSV or Excel files are supported');
+    previewHeaders = ['Unsupported file type'];
+    previewData = [];
+    headerFieldMap = {};
+    currentPage = 1;
+    renderTable();
+    document.getElementById('simulateBtn').disabled = true;
+  }
+});
+
+// 动态加载 container_data 下的所有集装箱
+async function loadContainerOptions() {
+  let res = await fetch('/container_config/api/list');
+  let list = await res.json();
+  const sel = document.getElementById('container_size');
+  sel.innerHTML = '';
+  if(list.length===0) {
+    sel.innerHTML = '<option value="">No available containers</option>';
+    return;
+  }
+  list.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+}
+// 动态加载所有卡车
+async function loadTruckOptions() {
+  let res = await fetch('/vehicle_config/api/list');
+  let list = await res.json();
+  const sel = document.getElementById('truck_size');
+  sel.innerHTML = '';
+  if(list.length===0) {
+    sel.innerHTML = '<option value="">No available trucks</option>';
+    return;
+  }
+  list.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    sel.appendChild(opt);
+  });
+}
+window.addEventListener('DOMContentLoaded',function(){
+  loadContainerOptions();
+  loadTruckOptions();
+  // 页面加载时渲染空表格
+  renderTable();
+});
+
+import '/static/js/three.min.js';
+import '/static/js/OrbitControls.js';
+// 兼容本地引入，确保 OrbitControls 正确挂载
+if (window.THREE && window.OrbitControls) {
+  THREE.OrbitControls = window.OrbitControls;
+}
+// 箱体颜色池
+const boxColors = [0x43a047,0xfbc02d,0xe53935,0x1e88e5,0x8e24aa,0x00897b,0x6d4c41,0x3949ab,0xd81b60,0x757575];
+// 体积排序+旋转+支撑装箱算法（集装箱bin模式，简化版）
+function packBoxesToBins(boxes, bins) {
+  // boxes: [{HandlingUnit,l,w,h,...}]，bins: [{position,size}]
+  // 返回：[{HandlingUnit, x, y, z, w, h, d, color, binIndex, rotation:[i,j,k]}]
+  let packed = [];
+  let boxList = boxes.map((b,i)=>({
+    ...b,
+    l:parseFloat(b.l),w:parseFloat(b.w),h:parseFloat(b.h),
+    volume:parseFloat(b.l)*parseFloat(b.w)*parseFloat(b.h),
+    idx:i
+  })).sort((a,b)=>b.volume-a.volume);
+  let colorMap = {};
+  let colorIdx = 0;
+  for(let b of boxList) {
+    if(!colorMap[b.HandlingUnit]) colorMap[b.HandlingUnit]=boxColors[colorIdx++%boxColors.length];
+  }
+  let used = new Array(boxList.length).fill(false);
+  let leftBoxes = boxList.map((b,i)=>i); // 剩余未放的箱子下标
+  for(let binIdx=0;binIdx<bins.length;binIdx++) {
+    let bin = bins[binIdx];
+    let binPos = (typeof bin.position==="string"?bin.position.split(','):bin.position).map(Number);
+    let binSize = (typeof bin.size==="string"?bin.size.split(','):bin.size).map(Number);
+    // 分层分行装箱
+    let origin = {x:0, y:0, z:0};
+    let maxX = binSize[0], maxY = binSize[1], maxZ = binSize[2];
+    let curZ = 0;
+    while (curZ < maxZ && leftBoxes.length > 0) {
+      let curY = 0;
+      let layerHeight = 0;
+      while (curY < maxY && leftBoxes.length > 0) {
+        let curX = 0;
+        let rowHeight = 0;
+        let placedInRow = false;
+        for (let bi = 0; bi < leftBoxes.length;) {
+          let i = leftBoxes[bi];
+          let box = boxList[i];
+          let rots = [
+            [box.l,box.w,box.h],[box.l,box.h,box.w],
+            [box.w,box.l,box.h],[box.w,box.h,box.l],
+            [box.h,box.l,box.w],[box.h,box.w,box.l]
+          ];
+          let placed = false;
+          for (let r = 0; r < rots.length; r++) {
+            let [bw, bh, bd] = rots[r];
+            if (curX + bw <= maxX && curY + bh <= maxY && curZ + bd <= maxZ) {
+              packed.push({
+                HandlingUnit: box.HandlingUnit,
+                x: curX + binPos[0], y: curY + binPos[1], z: curZ + binPos[2],
+                w: bw, h: bh, d: bd,
+                color: colorMap[box.HandlingUnit],
+                binIndex: binIdx,
+                rotation: rots[r]
+              });
+              curX += bw;
+              rowHeight = Math.max(rowHeight, bh);
+              layerHeight = Math.max(layerHeight, bh);
+              used[i] = true;
+              leftBoxes.splice(bi, 1);
+              placed = true;
+              placedInRow = true;
+              break;
+            }
+          }
+          if (!placed) {
+            bi++;
+          }
+        }
+        if (!placedInRow) break; // 当前行无法再放箱子，换下一行
+        curY += rowHeight;
+      }
+      if (layerHeight === 0) break; // 当前层无法再放箱子，换下一层
+      curZ += layerHeight;
+    }
+    if (leftBoxes.length === 0) break; // 所有箱子已放完
+  }
+  // 检查是否有未放下的箱子
+  if(used.some(u=>!u)) return null;
+  return packed;
+}
+// 3D渲染
+function renderPacking3D(containerSize, bins, packedBoxes) {
+  const scale=1000;
+  const container = document.getElementById('threejs-container');
+  container.innerHTML = '';
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, container.offsetWidth/container.offsetHeight, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(container.offsetWidth, container.offsetHeight);
+  renderer.setClearColor(0xf5f5f5);
+  container.appendChild(renderer.domElement);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.screenSpacePanning = false;
+  controls.minDistance = 0.1;
+  controls.maxDistance = 1000;
+  const light = new THREE.AmbientLight(0xffffff, 1.0);
+  scene.add(light);
+  const dLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dLight.position.set(10,10,10);
+  scene.add(dLight);
+  // container
+  if(containerSize && containerSize.length===3) {
+    const csize = containerSize.map(v=>v/scale);
+    const geo = new THREE.BoxGeometry(csize[0], csize[1], csize[2]);
+    const mat = new THREE.MeshBasicMaterial({color:0x1976d2, transparent:true, opacity:0.05});
+    const box = new THREE.Mesh(geo, mat);
+    box.position.set(csize[0]/2, csize[1]/2, csize[2]/2);
+    scene.add(box);
+    const edges = new THREE.EdgesGeometry(geo);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0x0d47a1, linewidth:3}));
+    line.position.set(csize[0]/2, csize[1]/2, csize[2]/2);
+    scene.add(line);
+  }
+  // bins
+  bins.forEach((bin,i)=>{
+    let binPos = (typeof bin.position==="string"?bin.position.split(','):bin.position).map(Number).map(v=>v/scale);
+    let binSize = (typeof bin.size==="string"?bin.size.split(','):bin.size).map(Number).map(v=>v/scale);
+    const geo = new THREE.BoxGeometry(binSize[0], binSize[1], binSize[2]);
+    const mat = new THREE.MeshBasicMaterial({color:0x43a047, transparent:true, opacity:0.08});
+    const box = new THREE.Mesh(geo, mat);
+    box.position.set(binPos[0]+binSize[0]/2, binPos[1]+binSize[1]/2, binPos[2]+binSize[2]/2);
+    scene.add(box);
+    const edges = new THREE.EdgesGeometry(geo);
+    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0x388e3c, linewidth:2}));
+    line.position.set(binPos[0]+binSize[0]/2, binPos[1]+binSize[1]/2, binPos[2]+binSize[2]/2);
+    scene.add(line);
+  });
+  // boxes
+  packedBoxes.forEach((box,i)=>{
+    const geo = new THREE.BoxGeometry(box.w/scale, box.h/scale, box.d/scale);
+    const mat = new THREE.MeshStandardMaterial({color:box.color, transparent:false, opacity:0.95});
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set((box.x+box.w/2)/scale, (box.y+box.h/2)/scale, (box.z+box.d/2)/scale);
+    scene.add(mesh);
+    // HandlingUnit文本
+    const loader = new THREE.FontLoader();
+    loader.load('https://cdn.jsdelivr.net/npm/three@0.150.1/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+      const textGeo = new THREE.TextGeometry(box.HandlingUnit, {
+        font: font,
+        size: 0.08,
+        height: 0.01
+      });
+      const textMat = new THREE.MeshBasicMaterial({color:0x222222});
+      const textMesh = new THREE.Mesh(textGeo, textMat);
+      textMesh.position.set((box.x+box.w/2)/scale-0.04*box.HandlingUnit.length, (box.y+box.h+10)/scale, (box.z+box.d/2)/scale);
+      scene.add(textMesh);
+    });
+  });
+  // 相机视角自动居中到所有对象
+  // 计算所有物体的包围盒中心和大小
+  const box3 = new THREE.Box3();
+  scene.traverse(function(obj){
+    if(obj.isMesh) box3.expandByObject(obj);
+  });
+  const center = new THREE.Vector3();
+  box3.getCenter(center);
+  const size = new THREE.Vector3();
+  box3.getSize(size);
+  // 设置相机距离和目标
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const fitDist = maxDim / (2 * Math.tan(Math.PI * camera.fov / 360));
+  camera.position.set(center.x + fitDist*0.7, center.y + fitDist*0.7, center.z + fitDist*1.1);
+  camera.lookAt(center);
+  controls.target.copy(center);
+  controls.update();
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+}
+// 绑定按钮
+window.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('simulateBtn').addEventListener('click',async function(){
+    const type = document.getElementById('vehicle_type').value;
+    if(type==='container'){
+      // 获取集装箱配置
+      const cname = document.getElementById('container_size').value;
+      let res = await fetch(`/container_config/api/${cname}`);
+      let cdata = await res.json();
+      if(!cdata.size||!cdata.bins||!cdata.bins.length){alert('请先在集装箱配置中添加尺寸和bin');return;}
+      // 体积排序+装箱
+      let packed;
+      try {
+        packed = packBoxesToBins(previewData, cdata.bins);
+      } catch (e) {
+        alert('装箱算法异常：'+e.message);
+        return;
+      }
+      if(!packed){alert('无法全部装入集装箱bin！');return;}
+      renderPacking3D(cdata.size, cdata.bins, packed);
+    }else if(type==='truck'){
+      // 获取卡车配置
+      const tname = document.getElementById('truck_size').value;
+      let res = await fetch(`/vehicle_config/api/${tname}`);
+      let tdata = await res.json();
+      if(!tdata.size){alert('Please add truck size in configuration');return;}
+      // 解析尺寸
+      let size = tdata.size.split(',').map(Number);
+      if(size.length!==3){alert('Truck size format error');return;}
+      // 简单装车算法：按体积排序，逐层逐行装箱
+      let packed = packBoxesToBins(previewData, [{position:[0,0,0],size:size}]);
+      if(!packed){alert('Not all boxes fit in the truck!');return;}
+      renderPacking3D(size, [{position:[0,0,0],size:size}], packed);
+    }
+  });
+});
+</script>
+{% endblock %}

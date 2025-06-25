@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  webapp:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      # 持久化存储数据
+      - ./uploads:/app/uploads
+      - ./output_csv:/app/output_csv
+      - ./output_json:/app/output_json
+      - ./models:/app/models
+    environment:
+      - PORT=5000
+      - FLASK_ENV=production
+    restart: unless-stopped

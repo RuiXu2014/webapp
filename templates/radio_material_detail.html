@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block title %}Radio Material Detail{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2>Material: {{ material_id }}</h2>
+  <form id="detailForm">
+    <input type="hidden" name="material_id" value="{{ material_id }}">
+    <div class="mb-3">
+      <button type="button" class="btn btn-primary btn-sm mb-2" id="addRecordBtn">Add Record</button>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle" id="recordsTable">
+          <thead>
+            <tr>
+              <th>Packed Qty</th>
+              <th>is_min</th>
+              <th>is_max</th>
+              <th>Packaging</th>
+              <th>Length</th>
+              <th>Width</th>
+              <th>Height</th>
+              <th>Volume</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rec in records %}
+            <tr>
+              <td><input type="number" class="form-control form-control-sm" name="packed_quantity" value="{{ rec.packed_quantity }}" readonly></td>
+              <td class="text-center"><input type="checkbox" name="is_min" {% if rec.is_min %}checked{% endif %}></td>
+              <td class="text-center"><input type="checkbox" name="is_max" {% if rec.is_max %}checked{% endif %}></td>
+              <td><input type="text" class="form-control form-control-sm" name="packaging_materials" value="{{ rec.packaging_materials }}"></td>
+              <td><input type="number" step="0.01" class="form-control form-control-sm" name="length" value="{{ rec.length }}"></td>
+              <td><input type="number" step="0.01" class="form-control form-control-sm" name="width" value="{{ rec.width }}"></td>
+              <td><input type="number" step="0.01" class="form-control form-control-sm" name="height" value="{{ rec.height }}"></td>
+              <td><input type="number" step="0.01" class="form-control form-control-sm" name="total_volume" value="{{ rec.total_volume }}"></td>
+              <td><button type="button" class="btn btn-sm btn-danger delete-record-btn">Delete</button></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const addRecordBtn = document.getElementById('addRecordBtn');
+  const recordsTable = document.getElementById('recordsTable').getElementsByTagName('tbody')[0];
+  addRecordBtn.addEventListener('click', function() {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="number" class="form-control form-control-sm" name="packed_quantity" value=""></td>
+      <td class="text-center"><input type="checkbox" name="is_min"></td>
+      <td class="text-center"><input type="checkbox" name="is_max"></td>
+      <td><input type="text" class="form-control form-control-sm" name="packaging_materials" value=""></td>
+      <td><input type="number" step="0.01" class="form-control form-control-sm" name="length" value="0"></td>
+      <td><input type="number" step="0.01" class="form-control form-control-sm" name="width" value="0"></td>
+      <td><input type="number" step="0.01" class="form-control form-control-sm" name="height" value="0"></td>
+      <td><input type="number" step="0.01" class="form-control form-control-sm" name="total_volume" value="0"></td>
+      <td><button type="button" class="btn btn-sm btn-danger delete-record-btn">Delete</button></td>
+    `;
+    tr.querySelector('.delete-record-btn').onclick = function() {
+      tr.remove();
+    };
+    recordsTable.appendChild(tr);
+  });
+  Array.from(document.querySelectorAll('.delete-record-btn')).forEach(btn => {
+    btn.onclick = function() {
+      btn.closest('tr').remove();
+    };
+  });
+  document.getElementById('detailForm').onsubmit = function(e) {
+    e.preventDefault();
+    const rows = Array.from(recordsTable.querySelectorAll('tr'));
+    const records = rows.map(tr => {
+      const cells = tr.querySelectorAll('input');
+      return {
+        packed_quantity: parseInt(cells[0].value),
+        is_min: cells[1].checked,
+        is_max: cells[2].checked,
+        packaging_materials: cells[3].value,
+        length: parseFloat(cells[4].value),
+        width: parseFloat(cells[5].value),
+        height: parseFloat(cells[6].value),
+        total_volume: parseFloat(cells[7].value)
+      };
+    });
+    fetch('/update_radio_material', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ material_id: '{{ material_id }}', records })
+    })
+    .then(res => res.json())
+    .then(resp => {
+      if (resp.success) {
+        alert('Saved successfully!');
+        window.close();
+      } else {
+        alert('Save failed: ' + resp.msg);
+      }
+    })
+    .catch(err => {
+      alert('Save failed: ' + err);
+    });
+  };
+});
+</script>
+{% endblock %}

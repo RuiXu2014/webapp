@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Truck Size Configuration{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2>Truck Size Configuration</h2>
+  <form id="addTruckForm" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <label class="form-label">Truck Name</label>
+      <input type="text" class="form-control" name="name" required>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Size (L×W×H, mm)</label>
+      <input type="text" class="form-control" name="size" placeholder="e.g. 13000,2500,2700" required>
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary">Add Truck</button>
+    </div>
+  </form>
+  <h4>Existing Trucks</h4>
+  <table class="table table-bordered">
+    <thead><tr><th>Name</th><th>Size (L×W×H, mm)</th><th>Actions</th></tr></thead>
+    <tbody id="truckTableBody">
+      {% for name, v in vehicles.items() %}
+      <tr data-name="{{ name }}">
+        <td class="truck-name">{{ name }}</td>
+        <td class="truck-size">{{ v.size }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning edit-btn">Edit</button>
+          <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('addTruckForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const name = this.name.value.trim();
+  const size = this.size.value.trim();
+  if (!name || !size) return;
+  const resp = await fetch('/vehicle_config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, size })
+  });
+  if (resp.ok) location.reload();
+  else alert('Failed to add truck');
+};
+
+// Edit and Delete actions
+const table = document.getElementById('truckTableBody');
+table && table.addEventListener('click', async function(e) {
+  const tr = e.target.closest('tr');
+  const name = tr.getAttribute('data-name');
+  if (e.target.classList.contains('delete-btn')) {
+    if (!confirm('Delete this truck?')) return;
+    const resp = await fetch('/vehicle_config/api/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    if (resp.ok) location.reload();
+    else alert('Delete failed');
+  } else if (e.target.classList.contains('edit-btn')) {
+    const sizeTd = tr.querySelector('.truck-size');
+    const oldSize = sizeTd.textContent;
+    const newSize = prompt('Edit size (L×W×H, mm):', oldSize);
+    if (newSize && newSize !== oldSize) {
+      const resp = await fetch('/vehicle_config/api/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, size: newSize })
+      });
+      if (resp.ok) location.reload();
+      else alert('Update failed');
+    }
+  }
+});
+</script>
+{% endblock %}

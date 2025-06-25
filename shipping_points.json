@@ -1,0 +1,14 @@
+[
+  {
+    "cnd8": "Radio",
+    "cnd7": "SiteMaterial"
+  },
+  {
+    "shipping_point": "CND8",
+    "material_class": "Radio"
+  },
+  {
+    "shipping_point": "CND7",
+    "material_class": "SiteMaterial"
+  }
+]

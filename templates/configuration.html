@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Configuration - ShippingPoints{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Shipping Point & Material Class Configuration</h2>
+    <form method="post" class="mb-4 row g-3 align-items-center">
+        <input type="hidden" name="action" value="add">
+        <div class="col-auto">
+            <label for="shipping_point" class="col-form-label">Shipping Point:</label>
+        </div>
+        <div class="col-auto">
+            <input type="text" id="shipping_point" name="shipping_point" class="form-control" required>
+        </div>
+        <div class="col-auto">
+            <label for="material_class" class="col-form-label">Material Class:</label>
+        </div>
+        <div class="col-auto">
+            <select id="material_class" name="material_class" class="form-select" required>
+                {% for mc in material_classes %}
+                <option value="{{ mc }}">{{ mc }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Add</button>
+        </div>
+    </form>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Current Configuration List</h5>
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Shipping Point</th>
+                        <th>Material Class</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in shipping_points %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ item.shipping_point }}</td>
+                        <td>{{ item.material_class }}</td>
+                        <td>
+                            <form method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="idx" value="{{ loop.index0 }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

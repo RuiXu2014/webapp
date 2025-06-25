@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% block title %}Data Loading{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2 class="mb-4">Data Upload and Processing</h2>
+    <!-- Data structure description and sample table -->
+    <div class="alert alert-info" role="alert">
+        <strong>Upload Data Format:</strong> Please upload a CSV or Excel file with the following columns:<br>
+        <ul class="mb-2">
+            <li><b>HU number</b>: Handling Unit number (string)</li>
+            <li><b>Shipping Point</b>: Shipping location (string)</li>
+            <li><b>Material</b>: Material ID (string)</li>
+            <li><b>Packed Quantity</b>: Quantity packed (integer)</li>
+            <li><b>Packaging Materials</b>: Packaging material type (string)</li>
+            <li><b>Length</b>: Length (meters, float)</li>
+            <li><b>Width</b>: Width (meters, float)</li>
+            <li><b>Height</b>: Height (meters, float)</li>
+            <li><b>Total Volume</b>: Total volume (cubic meters, float)</li>
+        </ul>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>HU number</th>
+                        <th>Shipping Point</th>
+                        <th>Material</th>
+                        <th>Packed Quantity</th>
+                        <th>Packaging Materials</th>
+                        <th>Length</th>
+                        <th>Width</th>
+                        <th>Height</th>
+                        <th>Total Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>LELMECB40059619226E</td>
+                        <td>CND8</td>
+                        <td>KRD901154/11</td>
+                        <td>8</td>
+                        <td>EAB-PACK</td>
+                        <td>0.99</td>
+                        <td>0.76</td>
+                        <td>1.15</td>
+                        <td>0.865</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <span class="text-muted">* Ensure your file includes all columns as shown above. Units: Length/Width/Height in meters, Volume in cubic meters.</span>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <input type="file" name="datafile" accept=".xlsx,.csv" class="form-control" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Upload and Process</button>
+            </div>
+        </div>
+    </form>
+    {% if logs %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Processing Log</h5>
+            <pre style="white-space: pre-wrap;">{{ logs|safe }}</pre>
+        </div>
+    </div>
+    {% endif %}
+    {% if radio_materials %}
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">Radio Material Details</h5>
+            <div class="mb-3">
+                <input type="text" id="searchBox" class="form-control" placeholder="Search Material ID...">
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="radioTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Material ID</th>
+                            <th>Min Package</th>
+                            <th>Max Package</th>
+                            <th>Record Count</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for material, info in radio_materials.items() %}
+                        <tr data-material="{{ material }}">
+                            <td>{{ material }}</td>
+                            <td>{{ info.min_quantity }}</td>
+                            <td>{{ info.max_quantity }}</td>
+                            <td>{{ info.unique_records_count }}</td>
+                            <td>
+                              <button type="button" class="btn btn-sm btn-info details-btn" data-material="{{ material }}" onclick="window.open('/radio_material_detail/{{ material|urlencode }}', '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');return false;">Details</button>
+                              <button type="button" class="btn btn-sm btn-danger delete-btn" data-material="{{ material }}">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <nav>
+                  <ul class="pagination pagination-sm justify-content-center" id="tablePagination"></ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function(){
+  // Simple client-side pagination for the radio table
+  const pageSize = 10;
+  const table = document.getElementById('radioTable');
+  if (!table) return;
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const pageCount = Math.ceil(rows.length / pageSize);
+  const pagUl = document.getElementById('tablePagination');
+  function renderPage(page) {
+    rows.forEach((row, i) => {
+      row.style.display = (i >= (page-1)*pageSize && i < page*pageSize) ? '' : 'none';
+    });
+    pagUl.innerHTML = '';
+    for(let i=1;i<=pageCount;i++) {
+      const li = document.createElement('li');
+      li.className = 'page-item' + (i===page?' active':'');
+      const a = document.createElement('a');
+      a.className = 'page-link';
+      a.href = '#';
+      a.textContent = i;
+      a.onclick = (e)=>{e.preventDefault();renderPage(i);};
+      li.appendChild(a); pagUl.appendChild(li);
+    }
+  }
+  if (rows.length > pageSize) {
+    renderPage(1);
+    pagUl.style.display = '';
+  } else {
+    pagUl.style.display = 'none';
+  }
+
+  // Search functionality
+  const searchBox = document.getElementById('searchBox');
+  if (searchBox) {
+    searchBox.addEventListener('input', function() {
+      const val = this.value.trim().toLowerCase();
+      rows.forEach(row => {
+        const mat = row.getAttribute('data-material').toLowerCase();
+        row.style.display = mat.includes(val) ? '' : 'none';
+      });
+      // Optionally, update pagination after search
+    });
+  }
+
+  // Delete button logic
+  const deleteBtns = document.querySelectorAll('.delete-btn');
+  deleteBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const material = this.getAttribute('data-material');
+      if (!confirm('Are you sure you want to delete material: ' + material + '?')) return;
+      fetch('/delete_radio_material', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ material_id: material })
+      })
+      .then(res => res.json())
+      .then(resp => {
+        if (resp.success) {
+          // Remove row from table
+          const row = document.querySelector(`tr[data-material="${material}"]`);
+          if (row) row.remove();
+          alert('Deleted successfully!');
+        } else {
+          alert('Delete failed: ' + resp.msg);
+        }
+      })
+      .catch(err => {
+        alert('Delete failed: ' + err);
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}
